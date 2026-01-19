@@ -13,6 +13,7 @@
 <div align="center">
 
   [![Sound Examples](https://img.shields.io/badge/Sound_Examples-blue)](https://victorzheleznov.github.io/jaes-modal-node/)
+  [![arXiv](https://img.shields.io/badge/arXiv-2601.10453-b31b1b.svg)](https://arxiv.org/abs/2601.10453)
   
 </div>
 

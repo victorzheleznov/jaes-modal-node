@@ -27,6 +27,9 @@ classes:
   <a href="https://github.com/victorzheleznov/jaes-modal-node" class="btn btn--primary btn--small" target="_blank" rel="noopener noreferrer">
     Code
   </a>
+  <a href="https://arxiv.org/abs/2601.10453" class="btn btn--primary btn--small" target="_blank" rel="noopener noreferrer">
+    arXiv
+  </a>
 </div>
 
 
