@@ -1,0 +1,7 @@
+defaults:
+  - nl: mlp
+  - _self_
+_target_: src.models.ModalSystem
+fs: ${datasets.train.fs}
+dur: ${datasets.train.dur}
+method_name: ${datasets.train.method_name}

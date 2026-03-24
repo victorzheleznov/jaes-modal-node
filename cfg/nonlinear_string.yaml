@@ -1,0 +1,38 @@
+defaults:
+  - model: modal_system
+  - datasets: nonlinear_string_datasets
+  - writer: wandb
+  - override model/nl: c_grad_net
+  - _self_
+model:
+  dur: ${collate_func.slice_dur}
+  nl:
+    in_dim: ${datasets.train.num_modes}
+    hidden_dim: 1000
+    activation:
+      _target_: src.utils.activation.LeakyReLU
+    init_name: "kaiming_normal_"
+    log_scale_std: 1e-2
+  lambda0: 1e3
+optimiser:
+  _target_: torch.optim.Adam
+  lr: 1e-3
+loss_func:
+  _target_: src.losses.MSEPosVelLoss
+  w_psi: 0
+collate_func:
+  _target_: src.datasets.SliceCollator
+  slice_dur: 1e-3
+  keep_num_ic: True
+metrics_func:
+  _target_: src.metrics.MetricList
+  metrics: [{_target_: src.metrics.MSERel, tensor_name: w}]
+num_epochs: 2000
+batch_size: 1
+seed: 46527
+float_dtype: "double"
+monitor: "min valid/loss"
+early_stop: -1
+log_step: 250
+max_grad_norm: null
+save_dir: "out/nonlinear_string"

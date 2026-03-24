@@ -1,0 +1,6 @@
+defaults:
+  - dataset@train: nonlinear_oscillator_dataset
+  - dataset@valid: nonlinear_oscillator_dataset
+valid:
+  num_variations: 20
+  seed: 19371

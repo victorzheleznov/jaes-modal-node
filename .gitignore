@@ -1,0 +1,16 @@
+.vscode/
+.venv/
+__pycache__/
+data/
+out/
+outputs/
+wandb/
+test/
+.env
+*.sh
+profile*.txt
+*.lprof
+*.wav
+*.ipynb
+*.html
+*.pdf

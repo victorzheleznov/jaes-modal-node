@@ -1,0 +1,9 @@
+defaults:
+  - dataset@train: nonlinear_string_dataset_B1_F2
+  - dataset@valid: nonlinear_string_dataset_F2_B2
+  - dataset@test: nonlinear_string_dataset_F2_B2
+valid:
+  num_variations: 20
+  seed: 19371
+test:
+  seed: 30174
