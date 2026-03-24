@@ -97,3 +97,5 @@ Computed model predictions for training, validation and test datasets will be st
 ### Results Reproduction
 
 Even with fixed seeds, randomised values depend on the specific device. Thus, your generated datasets would probably be different from the ones used in the paper and showcased on the accompanying web-page. Due to the large size (around 77 GB), the datasets used in the paper can be obtained by a personal request to [v.zheleznov@ed.ac.uk](mailto:v.zheleznov@ed.ac.uk?subject=Datasets%20Request). Even though the training process also involves randomisation, it should be possible to closely reproduce results in the paper using these datasets.
+
+The trained model used for evaluation in the paper is avaliable in the `out/2025_12_07_nonlinear_string_c_grad_net` folder which can be used with the `test.py` script as described in the testing section.

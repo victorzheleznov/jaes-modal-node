@@ -1,0 +1,174 @@
+model:
+  nl:
+    _target_: src.models.BaseCGradNet
+    in_dim: 75
+    hidden_dim: 1000
+    activation:
+      _target_: src.utils.activation.LeakyReLU
+    bias: true
+    init_name: kaiming_normal_
+    log_scale_std: 0.01
+  _target_: src.models.ModalSystem
+  fs: 88200
+  dur: 0.001
+  method_name: sav
+  lambda0: 1000.0
+datasets:
+  train:
+    _target_: src.datasets.NonlinearStringDataset
+    fs: 88200
+    dur: 2
+    method_name: sav
+    num_modes: 75
+    gamma_range:
+    - 123.48
+    - 174.62
+    kappa_range:
+    - 1.01
+    - 1.05
+    mu_range:
+    - 123.48
+    - 174.62
+    sigma0_range:
+    - 3
+    - 3
+    sigma1_range:
+    - 0.0002
+    - 0.0002
+    xe_range:
+    - 0.1
+    - 0.9
+    xo_range:
+    - 0.1
+    - 0.9
+    exc_amp_range:
+    - 25000.0
+    - 35000.0
+    exc_dur_range:
+    - 0.0005
+    - 0.0015
+    exc_type: 1
+    nl_name: spectral
+    num_variations: 60
+    seed: 0
+    float_dtype: double
+    method_kwargs:
+      lambda0: 1000.0
+    nl_kwargs:
+      use_exact: true
+      use_linear: false
+  valid:
+    _target_: src.datasets.NonlinearStringDataset
+    fs: 96000
+    dur: 3
+    method_name: sav
+    num_modes: 75
+    gamma_range:
+    - 174.62
+    - 246.94
+    kappa_range:
+    - 1.05
+    - 1.1
+    mu_range:
+    - 123.48
+    - 174.62
+    sigma0_range:
+    - 2
+    - 2
+    sigma1_range:
+    - 0.0002
+    - 0.0002
+    xe_range:
+    - 0.1
+    - 0.9
+    xo_range:
+    - 0.1
+    - 0.9
+    exc_amp_range:
+    - 35000.0
+    - 50000.0
+    exc_dur_range:
+    - 0.0005
+    - 0.0015
+    exc_type: 1
+    nl_name: spectral
+    num_variations: 20
+    seed: 19371
+    float_dtype: double
+    method_kwargs:
+      lambda0: 1000.0
+    nl_kwargs:
+      use_exact: true
+      use_linear: false
+  test:
+    _target_: src.datasets.NonlinearStringDataset
+    fs: 96000
+    dur: 3
+    method_name: sav
+    num_modes: 75
+    gamma_range:
+    - 174.62
+    - 246.94
+    kappa_range:
+    - 1.05
+    - 1.1
+    mu_range:
+    - 123.48
+    - 174.62
+    sigma0_range:
+    - 2
+    - 2
+    sigma1_range:
+    - 0.0002
+    - 0.0002
+    xe_range:
+    - 0.1
+    - 0.9
+    xo_range:
+    - 0.1
+    - 0.9
+    exc_amp_range:
+    - 35000.0
+    - 50000.0
+    exc_dur_range:
+    - 0.0005
+    - 0.0015
+    exc_type: 1
+    nl_name: spectral
+    num_variations: 60
+    seed: 30174
+    float_dtype: double
+    method_kwargs:
+      lambda0: 1000.0
+    nl_kwargs:
+      use_exact: true
+      use_linear: false
+writer:
+  _target_: src.utils.writer.WandBWriter
+  project: null
+  mode: offline
+optimiser:
+  _target_: torch.optim.Adam
+  lr: 0.001
+loss_func:
+  _target_: src.losses.MSEPosVelLoss
+  w_psi: 0
+collate_func:
+  _target_: src.datasets.SliceCollator
+  slice_dur: 0.001
+  keep_num_ic: true
+metrics_func:
+  _target_: src.metrics.MetricList
+  metrics:
+  - _target_: src.metrics.MSERel
+    tensor_name: w
+num_epochs: 2000
+batch_size: 1
+seed: 46527
+float_dtype: double
+monitor: min valid/loss
+early_stop: -1
+log_step: 250
+max_grad_norm: null
+save_dir: out/2025_12_07_nonlinear_string_c_grad_net
+world_size: 4
