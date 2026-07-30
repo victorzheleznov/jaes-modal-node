@@ -12,6 +12,7 @@
 
 <div align="center">
 
+  [![Paper](https://img.shields.io/badge/Paper-blue)](https://doi.org/10.17743/jaes.2026.0269)
   [![Sound Examples](https://img.shields.io/badge/Sound_Examples-blue)](https://victorzheleznov.github.io/jaes-modal-node/)
   [![arXiv](https://img.shields.io/badge/arXiv-2601.10453-b31b1b.svg)](https://arxiv.org/abs/2601.10453)
   

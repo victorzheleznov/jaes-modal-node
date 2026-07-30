@@ -51,3 +51,5 @@ footer:
     - label: "ORCID"
       icon: "fab fa-fw fa-orcid"
       url: "https://orcid.org/0009-0002-5534-505X"
+
+copyright: Victor Zheleznov
