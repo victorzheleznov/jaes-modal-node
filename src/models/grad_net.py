@@ -9,6 +9,8 @@ References
     2025.
 """
 
+from typing import Tuple
+
 import torch
 import torch.nn.functional as F
 from torch import nn
@@ -70,6 +72,17 @@ class MGradNetModule(nn.Module):
 
         return y
 
+    @torch.jit.export
+    def forward_and_potential(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Evaluate force and potential with one shared affine projection."""
+        x = F.linear(x, self._weight, bias=self._bias)
+        z = F.linear(self._activation(x), self._weight.T)
+        y = self._activation.potential(x)
+        if self._transform is not None:
+            z = z * self._transform(y).unsqueeze(-1)
+            y = self._transform.antiderivative(y)
+        return torch.neg(z), y
+
 
 class BaseMGradNet(nn.Module):
     def __init__(
@@ -103,15 +116,27 @@ class BaseMGradNet(nn.Module):
     @torch.jit.export
     def potential(self, x: torch.Tensor) -> torch.Tensor:
         y = 0
-        for log_coef, module in zip(self._log_coefs, self._list):
-            y += log_coef.exp() * module.potential(x)
+        for i, module in enumerate(self._list):
+            y += self._log_coefs[i].exp() * module.potential(x)
         return y
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         y = 0
-        for log_coef, module in zip(self._log_coefs, self._list):
-            y += log_coef.exp() * module(x)
+        for i, module in enumerate(self._list):
+            y += self._log_coefs[i].exp() * module(x)
         return y
+
+    @torch.jit.export
+    def forward_and_potential(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Evaluate both outputs without recomputing each module's projection."""
+        force = 0
+        potential = 0
+        for i, module in enumerate(self._list):
+            module_force, module_potential = module.forward_and_potential(x)
+            coef = self._log_coefs[i].exp()
+            force += coef * module_force
+            potential += coef * module_potential
+        return force, potential
 
 
 class BaseCGradNet(nn.Module):
@@ -164,3 +189,15 @@ class BaseCGradNet(nn.Module):
         y = (self._log_scale_out.exp() * self._log_scale_in.exp()).unsqueeze(0) * y
         y = F.linear(y, self._weight.T)
         return torch.neg(y)
+
+    @torch.jit.export
+    def forward_and_potential(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Evaluate force and potential with one shared affine projection."""
+        scale_in = self._log_scale_in.exp()
+        scale_out = self._log_scale_out.exp()
+        x = F.linear(x, scale_in.unsqueeze(-1) * self._weight, bias=self._bias)
+        y = self._activation(x)
+        y = (scale_out * scale_in).unsqueeze(0) * y
+        y = F.linear(y, self._weight.T)
+        potential = (scale_out.unsqueeze(0) * self._activation.antiderivative(x)).sum(-1)
+        return torch.neg(y), potential
