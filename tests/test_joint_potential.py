@@ -1,11 +1,12 @@
 """Tiny synthetic regressions; no checkpoint, dataset, or audio is needed."""
+
 import copy
 import unittest
 from unittest.mock import patch
 
 import torch
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
 
 from src.models.grad_net import BaseCGradNet, BaseMGradNet
 from src.ode.adjoint import AutoDiffAdjoint, CheckpointAdjoint
@@ -16,6 +17,7 @@ from src.utils.activation import Exp, Tanh
 
 class SeparateLaw(nn.Module):
     """Exercise the unchanged two-method protocol using the same learned law."""
+
     def __init__(self, law):
         super().__init__()
         self.law = law
@@ -30,6 +32,7 @@ class SeparateLaw(nn.Module):
 
 class PolynomialLaw(nn.Module):
     """An independent nonlinear law with no joint-evaluation method."""
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return -x.pow(3)
 
@@ -43,22 +46,24 @@ def make_law(kind, bias=True, dtype=torch.float64):
     if kind == "cgrad":
         law = BaseCGradNet(3, 7, Tanh(), bias=bias, log_scale_std=0.1)
     else:
-        law = BaseMGradNet(3, [7, 4], Tanh(),
-                          transform=Exp() if kind == "mgrad_transform" else None,
-                          bias=bias, log_coefs_std=0.1)
+        law = BaseMGradNet(
+            3, [7, 4], Tanh(), transform=Exp() if kind == "mgrad_transform" else None, bias=bias, log_coefs_std=0.1
+        )
     return law.to(dtype=dtype)
 
 
 def problem(dtype=torch.float64):
     batch, modes, samples = 2, 3, 12
     return InitialValueProblem(
-        8000, samples,
+        8000,
+        samples,
         torch.linspace(-0.01, 0.02, 2 * modes, dtype=dtype).repeat(batch, 1),
-        torch.tensor([[2., 3., 5.]], dtype=dtype).repeat(batch, 1),
+        torch.tensor([[2.0, 3.0, 5.0]], dtype=dtype).repeat(batch, 1),
         torch.full((batch, modes), 0.1, dtype=dtype),
         torch.full((batch,), 0.2, dtype=dtype),
         torch.full((batch, modes), 0.2, dtype=dtype),
-        torch.full((batch, samples), 0.01, dtype=dtype))
+        torch.full((batch, samples), 0.01, dtype=dtype),
+    )
 
 
 class JointPotentialTests(unittest.TestCase):
@@ -85,10 +90,12 @@ class JointPotentialTests(unittest.TestCase):
                         tol = 3e-5 if dtype == torch.float32 else 2e-11
                         torch.testing.assert_close(joint_force, force, rtol=tol, atol=tol)
                         torch.testing.assert_close(joint_potential, potential, rtol=tol, atol=tol)
-                        old_grads = torch.autograd.grad(force.square().sum() + 0.3 * potential.square().sum(),
-                                                        (x, *a.parameters()))
-                        new_grads = torch.autograd.grad(joint_force.square().sum() + 0.3 * joint_potential.square().sum(),
-                                                        (z, *b.parameters()))
+                        old_grads = torch.autograd.grad(
+                            force.square().sum() + 0.3 * potential.square().sum(), (x, *a.parameters())
+                        )
+                        new_grads = torch.autograd.grad(
+                            joint_force.square().sum() + 0.3 * joint_potential.square().sum(), (z, *b.parameters())
+                        )
                         for old, new in zip(old_grads, new_grads):
                             self.assertTrue(torch.isfinite(new).all().item())
                             torch.testing.assert_close(new, old, rtol=tol, atol=tol)

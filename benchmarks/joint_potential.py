@@ -1,8 +1,9 @@
 """Callable, CPU-only synthetic microbenchmark; no checkpoint or data download.
 
-Run from the repository root: python -m benchmarks.joint_potential
+Run from the repository root: python3 -m benchmarks.joint_potential
 This times joint force/potential evaluation, not an audio renderer.
 """
+
 import argparse
 import json
 import statistics
@@ -46,15 +47,22 @@ def benchmark(dim=8, hidden=32, batch=4, iterations=500, repeats=6, scripted=Fal
                     started = time.perf_counter()
                     for _ in range(iterations):
                         functions[name]()
-                    rows.append({"repeat": repeat, "method": name,
-                                 "seconds": time.perf_counter() - started})
-        medians = {name: statistics.median(r["seconds"] for r in rows if r["method"] == name)
-                   for name in functions}
-        return {"torch": torch.__version__, "device": "cpu", "dtype": "float64", "threads": 1,
-                "scripted": scripted, "dimensions": {"input": dim, "hidden": hidden, "batch": batch},
-                "iterations_per_measurement": iterations, "repeats": repeats, "rows": rows,
-                "median_seconds": medians, "separate_over_joint": medians["separate"] / medians["joint"],
-                "scope": "Synthetic joint-evaluation microbenchmark; no renderer speedup claim."}
+                    rows.append({"repeat": repeat, "method": name, "seconds": time.perf_counter() - started})
+        medians = {name: statistics.median(r["seconds"] for r in rows if r["method"] == name) for name in functions}
+        return {
+            "torch": torch.__version__,
+            "device": "cpu",
+            "dtype": "float64",
+            "threads": 1,
+            "scripted": scripted,
+            "dimensions": {"input": dim, "hidden": hidden, "batch": batch},
+            "iterations_per_measurement": iterations,
+            "repeats": repeats,
+            "rows": rows,
+            "median_seconds": medians,
+            "separate_over_joint": medians["separate"] / medians["joint"],
+            "scope": "Synthetic joint-evaluation microbenchmark; no renderer speedup claim.",
+        }
     finally:
         torch.set_num_threads(previous_threads)
 

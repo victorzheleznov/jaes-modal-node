@@ -75,12 +75,19 @@ class MGradNetModule(nn.Module):
     @torch.jit.export
     def forward_and_potential(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Evaluate force and potential with one shared affine projection."""
+        # linear layer
         x = F.linear(x, self._weight, bias=self._bias)
-        z = F.linear(self._activation(x), self._weight.T)
+
+        # activation
+        z = self._activation(x)
+        z = F.linear(z, self._weight.T)
         y = self._activation.potential(x)
+
+        # transform
         if self._transform is not None:
             z = z * self._transform(y).unsqueeze(-1)
             y = self._transform.antiderivative(y)
+
         return torch.neg(z), y
 
 
@@ -196,8 +203,11 @@ class BaseCGradNet(nn.Module):
         scale_in = self._log_scale_in.exp()
         scale_out = self._log_scale_out.exp()
         x = F.linear(x, scale_in.unsqueeze(-1) * self._weight, bias=self._bias)
+
         y = self._activation(x)
         y = (scale_out * scale_in).unsqueeze(0) * y
         y = F.linear(y, self._weight.T)
-        potential = (scale_out.unsqueeze(0) * self._activation.antiderivative(x)).sum(-1)
+
+        potential = self._activation.antiderivative(x)
+        potential = (scale_out.unsqueeze(0) * potential).sum(-1)
         return torch.neg(y), potential
