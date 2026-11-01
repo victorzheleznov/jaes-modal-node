@@ -95,6 +95,26 @@ CUDA_VISIBLE_DEVICES=0,1 torchrun --standalone --nnodes=1 --nproc_per_node=gpu t
 
 Computed model predictions for training, validation and test datasets will be stored within the `test/nonlinear_string` folder. These predictions can be analysed in the provided `notebooks/test_nonlinear_string.py` notebook which was used to calculate the metrics and plot the figures for the paper.
 
+### Solver Regression Tests
+
+After setting up the environment above, run the synthetic force/potential tests
+from the repository root:
+```
+python3 -B -m unittest discover -s tests -p 'test_joint_potential.py' -v
+```
+
+These tests cover GradNet values and gradients, both adjoints, TorchScript, and
+the fallback for nonlinear functions without a joint force/potential method.
+They do not require generated datasets, trained checkpoints, or GPUs.
+
+To measure the separate and joint GradNet evaluations on CPU:
+```
+python3 -B -m benchmarks.joint_potential
+python3 -B -m benchmarks.joint_potential --scripted
+```
+This microbenchmark measures force/potential evaluation, not complete synthesis
+or audio quality.
+
 ### Results Reproduction
 
 Even with fixed seeds, randomised values depend on the specific device. Thus, your generated datasets would probably be different from the ones used in the paper and showcased on the accompanying web-page. Due to the large size (around 77 GB), the datasets used in the paper can be obtained by a personal request to [v.zheleznov@ed.ac.uk](mailto:v.zheleznov@ed.ac.uk?subject=Datasets%20Request). Even though the training process also involves randomisation, it should be possible to closely reproduce results in the paper using these datasets.

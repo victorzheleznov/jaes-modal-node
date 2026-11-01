@@ -92,8 +92,13 @@ class SAV(nn.Module):
 
     @torch.jit.export
     def _calc_g_std(self, q: torch.Tensor) -> torch.Tensor:
-        nl = self._nl(q)
-        potential = self._nl.potential(q)
+        # GradNets can share the affine projection needed by both outputs.
+        # Keep the original protocol for other nonlinear laws; no state is cached.
+        if hasattr(self._nl, "forward_and_potential"):
+            nl, potential = self._nl.forward_and_potential(q)
+        else:
+            nl = self._nl(q)
+            potential = self._nl.potential(q)
         true_psi = self._calc_psi(potential)
         g = -nl / true_psi
         return g
